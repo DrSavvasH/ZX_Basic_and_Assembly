@@ -1,6 +1,6 @@
 10 SAVE "myZXOS.bas"
 20 LAYER 1,2: BORDER 7: PAPER 7: INK 0: OVER 0: CLS
-30 REM ZX-NEXT OBJECTS (pilot code, still in design phase)
+30 REM ZX-FORMS OS v0.1
 40 REM
 50 REM Menu Init Variables***********************************
 60 STARTMENU=9000
@@ -48,7 +48,7 @@
 440 REM *************Mouse Moves******************************
 550 LET xx=%x: LET yy=%y
 551 DRIVER 126,1 TO %s,%x,%y: LET %z=%s&@111
-553 PRINT AT 23,0;"mouse:";%x;",";%y;" btn ";%z;"     "
+553 PRINT AT 23,0;%x;",";%y;" btn ";%z;"     "
 555 IF %z=2 THEN GO SUB 900: REM ON LEFT MOUSE CLICK
 565 IF %z=0 THEN dragLock = 0 
 645 DRIVER 126,2,A,0
@@ -81,15 +81,15 @@
 930 RETURN
 940 IF xx < 66 OR xx > 577 THEN RETURN
 950 IF yy < 32 OR yy > 206 THEN RETURN
-960 newSel=o ( INT ((xx-64)/8)+1, INT ((yy-32)/8)+1): print at 16,0; "Selection:";newsel
-970 PLOT %x-64,%y-32
-980 PRINT AT 22,0;"Obj at x:"; INT ((xx-64)/8)+1;" y:"; INT ((yy-32)/8)+1;" Val:";newSel;"  "
+960 newSel=o ( INT ((xx-64)/8)+1, INT ((yy-32)/8)+1): REM print at 16,0; "Selection:";newsel
+970 REM PLOT %x-64,%y-32
+980 REM PRINT AT 22,0;"Obj at x:"; INT ((xx-64)/8)+1;" y:"; INT ((yy-32)/8)+1;" Val:";newSel;"  "
 990 IF newSel >0 And newSel <13 THEN menuSelect=newSel: GO SUB 9080: REM REFRESH HOME bttnS
 1000 IF newSel=2 THEN SAVE "ZXOS.bas": PRINT AT 23,50;"File Saved": PAUSE 200: REM PRINT AT 23,50;"          "
 1010 IF newsel=3 THEN GO SUB 7000: REM CREATE NEW FORM
 1020 IF newsel=12 THEN GO SUB 6000 : REM CREATE NEW FORM
 1100 IF newsel >12 THEN remx=xx:remy=yy:dragLock=1: REM INITIATE DRAG
-1900 PRINT AT 18,0;"Active Form:";form;" ,bttn:";bttn
+1900 REM PRINT AT 18,0;"Active Form:";form;" ,bttn:";bttn
 1990 RETURN
 2000 REM **************DRAG AND DROP OBJECT*************************************************************
 2001 REM IDENTIFY TYPE OF OBJECT TO PROCEED
@@ -103,9 +103,9 @@
 2010 REM MOVING A FORM
 2015 REM Normally it should be done in two steps. MouseClick locks object. MouseMove with click down should drag the form to a new position.
 2020 REM d= newsel -12
-2060 OVER 1: PRINT AT f(d,2), f(d,1); OVER 1; f$(d)  :REM PRINT AT y,x
+2060 PRINT AT f(d,2), f(d,1); OVER 1; f$(d)  :REM PRINT AT y,x
 2070 OVER 1: PLOT f(d,1)*8,f(d,2)*8: DRAW f(d,3),0: DRAW 0,f(d,4): DRAW -f(d,3),0: DRAW 0,-f(d,4) : REM PLOT y,x
-2080 OVER 1: PLOT f(d,1)*8,(f(d,2)*8)+7: DRAW f(d,3),0
+2080 PLOT f(d,1)*8,(f(d,2)*8)+7: DRAW f(d,3),0 : OVER 0
 2100 charx= INT ((xx-remx)/8)
 2110 chary= INT ((yy-remy)/8)
 2130 f(d,1)= f(d,1)+ int(charx): REM x
@@ -114,56 +114,67 @@
 2170 remx=xx:remy=yy: REM DragLock =0
 2180 RETURN
 2190 REM MOVING A BUTTON ************************************************************
-2200 OVER 1: PRINT AT b(d,2), b(d,1); OVER 1; b$(d)  :REM PRINT AT y,x
-2210 OVER 1: PLOT b(d,1)*8,b(d,2)*8: DRAW b(d,3),0: DRAW 0,b(d,4): DRAW -b(d,3),0: DRAW 0,-b(d,4) : REM PLOT y,x
-2220 OVER 1: PLOT b(d,1)*8,(b(d,2)*8)+7: DRAW b(d,3),0
+2205 PRINT AT b(d,2), b(d,1); OVER 1; b$(d) :REM PRINT AT y,x: pause 0
+2210 OVER 1:PLOT (b(d,1)*8),(b(d,2)*8): DRAW b(d,3),0: DRAW 0,8: DRAW -b(d,3),0: DRAW 0,-8 : REM PLOT y,x
 2230 charx= INT ((xx-remx)/8)
 2240 chary= INT ((yy-remy)/8)
 2250 b(d,1)= b(d,1)+ int(charx): REM x
 2260 b(d,2)=b(d,2)+ INT (chary): REM y
-2270 GO SUB 6040
-2280 remx=xx:remy=yy: REM DragLock =0
-2290 RETURN
+2270 GO SUB 6070
+2275 return
+2280 PRINT AT b(d,2),b(d,1);b$(d)
+2290 PLOT (b(d,1)*8),(b(d,2)*8): DRAW b(d,3),0: DRAW 0,8: DRAW -b(d,3),0: DRAW 0,-8
+2300 PLOT b(d,1)*8,(b(d,2)*8): DRAW b(d,3),0
+2310 REM assign only new object to screen map
+2320 FOR h=1 TO LEN b$(d)
+2330 o(h+b(d,1),b(d,2)+1)=newsel : REM Attention 1 was added to x because arrays cannot store 0 values as indices.
+2340 NEXT h
+2380 remx=xx:remy=yy: REM DragLock =0
+2990 RETURN
 3000 REM ***********************************************************************************************
 6000 REM C R E A T E   B U T T O N ********************************************************************
-6010 bttn=bttn+1: objindx = objindx +1
-6015 b$(bttn) = "Button "+ STR$ (bttn) + " F:"+ STR$(form)
-6020 b(bttn,1)=f(form,1)+bttn+1: b(bttn,2)=f(form,2)+bttn: b(bttn,3)= LEN (b$(bttn))*8
-6030 b(bttn,4)=form
-6035 b(bttn,5)=objindx
-6037 d = bttn
-6040 PRINT AT b(d,2),b(d,1);b$(d)
-6050 PLOT (b(d,1)*8),(b(d,2)*8): DRAW b(d,3),0: DRAW 0,8: DRAW -b(d,3),0: DRAW 0,-8
-6060 REM assign to screen map
-6070 FOR h=1 TO LEN a$
-6080 o(b(d,1)+h,b(d,2)+1)=objIndx : REM Attention 1 was added to x because arrays cannot store 0 values as indices. Remember to decrement x by 1 when using this array
-6090 NEXT h
-6100 RETURN
+6010 bttn=bttn+1: objindx = objindx +1 : d= bttn
+6020 b$(bttn) = "Button "+ STR$ (bttn) + " F:"+ STR$(form)
+6030 b(bttn,1)=f(form,1)+bttn+1: b(bttn,2)=f(form,2)+bttn: b(bttn,3)= LEN (b$(bttn))*8
+6040 b(bttn,4)=form
+6050 b(bttn,5)=objindx
+6060 newsel = objindx
+6070 For n= 1 to bttn
+6080 OVER 0: PRINT AT b(n,2),b(n,1);b$(n)
+6090 PLOT (b(n,1)*8),(b(n,2)*8): DRAW b(n,3),0: DRAW 0,8: DRAW -b(n,3),0: DRAW 0,-8
+6100 Next n
+6110 REM assign only new object to screen map
+6120 FOR h=1 TO LEN b$(d)
+6130 o(h+b(d,1),b(d,2)+1)=newsel : REM Attention 1 was added to x because arrays cannot store 0 values as indices. Remember to decrement x by 1 when using this array
+6140 NEXT h
+6145 remx=xx:remy=yy: REM DragLock =0
+6150 RETURN
 6999 REM **********************************************************************************************
 7000 REM C R E A T E   F O R M : resemble style of starting ZX screen menu (with sinclair logo colours)
 7010 REM ideally this code should be written in Assembly
 7030 REM CONFIGURE NEW FORM
-7040 form=form+1: PRINT AT 19,0;"Creating Form ";form
+7040 form=form+1: REM PRINT AT 19,0;"Creating Form ";form
 7045 objindx=objindx+1
 7050 f(form,1)=2 + form : REM upper left horizontal coordinates y. Is it multpile of 8? (1-63)
 7060 f(form,2)=2 + form: REM upper left vertical coordinates (1-23) x
 7070 f(form,3)=240: REM form width
 7080 f(form,4)=80: REM form height
 7090 f(form,5)=objindx
+7100 f$(form)="Form "+ STR$ (form)
+7105 newsel = objindx
 7110 REM Assign Object to Map (y,x)
 7130 REM DRAW ALL FORMS IN APP
 7140 FOR d=1 TO form
-7145 f$(d) = "Form " + STR$ (d)
-7150 OVER 0: PRINT AT f(d,2), f(d,1);f$(d)  :REM PRINT AT y,x
-7160 OVER 0: PLOT f(d,1)*8,f(d,2)*8: DRAW f(d,3),0: DRAW 0,f(d,4): DRAW -f(d,3),0: DRAW 0,-f(d,4) : REM PLOT y,x
-7170 OVER 0: PLOT f(d,1)*8,(f(d,2)*8)+7: DRAW f(d,3),0
+7150 PRINT OVER 0;AT f(d,2), f(d,1);f$(d)  :REM PRINT AT y,x
+7160 PLOT OVER 0; f(d,1)*8,f(d,2)*8: DRAW f(d,3),0: DRAW 0,f(d,4): DRAW -f(d,3),0: DRAW 0,-f(d,4) : REM PLOT y,x
+7170 PLOT OVER 0; f(d,1)*8,(f(d,2)*8)+7: DRAW f(d,3),0
 7180 NEXT d
 7190 REM UPDATE SCREEN MAP WITH COORDS OF NEW FORM
 7200 FOR e=0 TO (f(form,3)/8)-2
-7210 o (e+f(form,1),f(form,2)+1)= objindx
+7210 o (e+f(form,1),f(form,2)+1)= newsel
 7220 REM PRINT AT f(form,2),f(form,1)+e;f(form,1)+e  : REM y,x
 7230 NEXT e
-7240 PRINT AT 19,0:;"                      "
+7240 REM PRINT AT 19,0:;"                      "
 7990 RETURN
 7999 REM ****************************************************
 9000 REM DRAW HOME MENU
@@ -172,9 +183,9 @@
 9060 READ a$,x,y: PRINT AT x,y; INVERSE (a=menuSelect);a$ : REM With Print At we make sure that Characters are aligned to the 23x64 map
 9062 PLOT (y*8),(x*8): DRAW LEN (a$)*8,0: DRAW 0,8: DRAW - LEN (a$)*8,0: DRAW 0,-8
 9063 REM Assign Full Area Covered by New Object to Map (array o)
-9064 objIndx=objIndx+1
+9064 objindx=objindx+1
 9065 FOR b=1 TO LEN a$
-9067 o(y+b,x+1)=objIndx : REM Attention 1 was added to x because arrays cannot store 0 values as indices. Remember to decrement x by 1 when using this array
+9067 o(y+b,x+1)=objindx : REM Attention 1 was added to x because arrays cannot store 0 values as indices. Remember to decrement x by 1 when using this array
 9068 NEXT b
 9070 NEXT a
 9075 PLOT 0,0: DRAW 511,0: DRAW 0,175: DRAW -511,0: DRAW 0,-175
