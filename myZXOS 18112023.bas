@@ -1,6 +1,6 @@
 10 SAVE "myZXOS.bas"
 20 LAYER 1,2: BORDER 7: PAPER 7: INK 0: OVER 0: CLS
-30 REM ZX-FORMS OS v0.1
+30 REM ZX-NEXT OBJECTS beta 1.1
 40 REM
 50 REM Menu Init Variables***********************************
 60 STARTMENU=9000
