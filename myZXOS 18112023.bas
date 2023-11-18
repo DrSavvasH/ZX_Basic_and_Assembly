@@ -114,7 +114,7 @@
 2170 remx=xx:remy=yy: REM DragLock =0
 2180 RETURN
 2190 REM MOVING A BUTTON ************************************************************
-2200 OVER 1: PRINT AT b(d,2), b(d,1); OVER 1; f$(d)  :REM PRINT AT y,x
+2200 OVER 1: PRINT AT b(d,2), b(d,1); OVER 1; b$(d)  :REM PRINT AT y,x
 2210 OVER 1: PLOT b(d,1)*8,b(d,2)*8: DRAW b(d,3),0: DRAW 0,b(d,4): DRAW -b(d,3),0: DRAW 0,-b(d,4) : REM PLOT y,x
 2220 OVER 1: PLOT b(d,1)*8,(b(d,2)*8)+7: DRAW b(d,3),0
 2230 charx= INT ((xx-remx)/8)
