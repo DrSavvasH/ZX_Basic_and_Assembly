@@ -1,3 +1,5 @@
+; Invert UDGs by inverting the bytes one-by-one
+; A useful snippet for app/game graphics on the ZX Spectrum (tested in 128k,48k)
 org 30000
 	ld a,2
 	call 5633  ;open channel 2- write to screen	
