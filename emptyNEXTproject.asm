@@ -40,4 +40,4 @@ start:
 	; Generate the Nex file automatically based on which pages you use.
 	SAVENEX AUTO
 
-    SAVEBIN "Code.bin",30000,1000 ;- save $4000 begin from $C000 of RAM to file
+    SAVEBIN "Code.bin",30000,1000 ;- save 1000 bytes beginning from memory location 30000
