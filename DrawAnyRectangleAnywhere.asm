@@ -16,7 +16,7 @@
 	ORG 30000
 start:
 
-; attributes (code by Spiteworx https://www.youtube.com/watch?v=jE8ksX8_0No&t=352s)
+; attributes (initialization code from Spiteworx https://www.youtube.com/watch?v=jE8ksX8_0No&t=352s)
 	   LD HL,$5800 ; start of attribute memory
 	   LD A, 56 ;64+48+2 attributes FLASH *128 + BRIGHT *64 + PAPER *8 + INK
 	   LD (HL),a   ; Set first byte of attribute memory
@@ -24,11 +24,12 @@ start:
 	   LD DE,$5801 ; First destination address of LDIR
 	   LD BC,767 ; 767 number of bytes to copy to display memory
 	   LDIR
+;My Code
 	   LD C,8   ; POKE 30014,8
 	   LD A,80  ; POKE 30016,80
 	   PUSH BC
 	   PUSH AF
-drawVerticalLIne1:  ; My code
+drawVerticalLIne1:
        LD B,C ; program will loop 8 times and continue (For B=8 to 1 step -1) 0-191 or 0-255
        ;LD HL, $4000    Instead of giving a specific screen address, we will ask PIXELAD to calculate it for us (convenient)
 	   LD DE, $A0 ; D=Y and E=X --> DECIMAL 1632 Y=16, X=32
