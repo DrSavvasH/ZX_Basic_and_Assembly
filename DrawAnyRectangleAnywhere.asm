@@ -34,29 +34,40 @@ start:
 	   LDIR
 ; ************************************MY CODE
 ; Set height and width of rectangle 
-	   LD C,50   ; POKE 30014,8
-	   LD A,20  ; POKE 30016,80
+	   LD C,20   ; POKE 30015,5  REM : HEIGHT (minimum 2, with 1 it's not a rectangle anymore)
+	   LD A,90   ; POKE 30017,9  REM: WIDTH (minimum 9, otherwise it draws long horizontal lines for some reason)
 	   PUSH BC ; store for later use
 	   PUSH AF ; store for later use
 	   ;LD HL, $4000   Starting Pixel. Instead of giving a specific screen address, we will ask PIXELAD to calculate it for us (more convenient)	  
-       LD DE, $0A0A; Starting pixel (in 4-digit HEX) prepared for PIXELAD . D=Y (Vertical) and E=X (horizontal). 
+       LD DE, $3737 ; Starting pixel (in 4-digit HEX) prepared for PIXELAD . D=Y (Vertical) and E=X (horizontal). 
 	   				; How to calculate: put Y coordinates in calc as DEC and write down HEX. Repeat with X. Then put both HEX values next to each other --> magic!  
 					;eg DECIMAL 16 and 32 (Y=16, X=32) --> HEX 10 and 20 --> type 1020
-					;0,0 --> 00   191,255 --> BFFF  160,160 -->0A0A  10,10 --> 0A0A  20,20 -->1414  30,30 -->1E1E  40,40 -->2828 
-					; 50,50 -->3232 70,70 --> 4646  80,80-->5050 90,90 -->
-;60,60-->3C3C (SPECIAL CASE - specific position doesn't like fixation of last horizontal line, so we'll have to send it to 
-;              a separate execution code)
+					;0,0 --> 0000 10,10-->0A0A  20,20-->1414  30,30-->1E1E  40,40-->2828 50,50-->3232 55,55-->3737
+					;70,70-->4646  80,80-->5050 90,90-->5A5A 
+					;105,105-->6969  110,110-->6E6E  120,120-->78 130,130-->82,82 140,140-->8C8C 150,150-->9696 160,160 -->0A0A 170,170-->AAAA 180,180-->B4B4 190,190--> BEBE 191,255 --> BFFF  
+; Special Cases : 95,95-->5F5F : gives the impression that a double line becomes one.
+;60,60-->3C3C 100,100-->6464 (Special Cases - specific position doesn't like fixation of last horizontal line or else a gap is seen, so we'll have to send it to 
+;              a separate execution code). Following code checks for these positions:
 	   LD A,$3C
 	   CP D
 	   JR Z,CompareE
-	   JR DrawWithFixation
+	   JR CheckNext
 CompareE:
-	   LD A,$3C
+	   ;LD A,$3C
        CP E
 	   JR Z,DrawWithoutFixation
+CheckNext:
+	   LD A,$64
+	   CP D	
+	   JR Z,Compare2E
+	   JR DrawWithFixation
+Compare2E:
+	   CP E
+	   JR Z,DrawWithoutFixation
+
 DrawWithFixation:
 drawVerticalLIne1:
-       LD B,C ; program will loop 8 times and continue (For B=8 to 1 step -1) 0-191 or 0-255
+       LD B,C ; program will loop (*height_value) times and continue (eg for B=8 to 1 step -1) / values 0-191 or 0-255
 loop1: 
 	   PIXELAD		  ; calculate new pixel location on memory
 	   LD A, %10000000; bits  128 64 32 16 8 4 2 1  
@@ -66,7 +77,7 @@ loop1:
 
 drawHorizontalLIne1:
        POP AF
-       LD B,A ; (bytes*8) -- > program will loop 80 times and continue (For B=80 to 1 step -1) 0-191 or 0-255
+       LD B,A ; (bytes*8) -- > program will loop (*width_value) times and continue (eg for B=80 to 1 step -1)/ values 0-191 or 0-255
 	   PUSH AF
 loop2: 
 	   PIXELAD
@@ -94,11 +105,11 @@ prepare_for_final_loop:
        LD B,A 
 	   LD A, %11111111; bits  128 64 32 16 8 4 2 1
 	  ;F I X A T I O N   O F   L A S T   H O R I Z O N T A L   L I N E
-	  ;on final horizontal line, avoid drawing one more line on the upper right or left corners. 
+	  ;on final horizontal line, we need to avoid drawing one more 8px line on the upper right or left corners (bug?). Except for two locations (Why??)
 	  ;Following routine brings PLOTTING 8 pixels to the left, at the correct position, and compensates for the extra 8 pixels on the left.
 	  ;This is a strange bug occuring only at specific locations of memory (or specific locations of screen eg 10,10 -->0A0A)
 correct_coords:	 
-       DEC B
+	   DEC B
 	   DEC B
 	   DEC B
 	   DEC B
