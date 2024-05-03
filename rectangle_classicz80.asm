@@ -80,7 +80,8 @@ LOOPV2:
 	   RET
 
 
-Get_Pixel_Address:	LD A,D				; Calculate Y2,Y1,Y0
+Get_Pixel_Address:	; Code kindly borrowed (and modified) from http://www.breakintoprogram.co.uk/hardware/computers/zx-spectrum/screen-memory-layout
+			LD A,D				; Calculate Y2,Y1,Y0
 			AND %00000111			; Mask out unwanted bits
 			OR %01000000			; Set base address of screen
 			LD H,A				; Store in H
@@ -104,5 +105,5 @@ Get_Pixel_Address:	LD A,D				; Calculate Y2,Y1,Y0
 			OR L				; OR with Y5,Y4,Y3
 			LD L,A				; Store in L
 			LD A,C
-			AND 7
+			AND %0111
 			RET
