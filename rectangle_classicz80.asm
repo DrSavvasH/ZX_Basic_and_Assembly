@@ -1,9 +1,10 @@
 ; draws rectangle on screen using algorithm to calculate PIXELADDRESS (can be used with any classic ZX Spectrum, no PIXELAD/PIXELDN commands as in NEXT)
 org 30000 
+;address should be the same as the one loaded and called from BASIC. However, number of bytes should be exact
 start:
 ;border color
-	   ;LD a,0
-	   ;OUT ($FE),a ; 254,a
+	   LD a,3
+	   OUT ($FE),a ; 254,a
 ; attributes (code by Spiteworx https://www.youtube.com/watch?v=jE8ksX8_0No&t=352s)
 	   LD HL,$5800 ; start of attribute memory (SCREEN MEMORY COLOR DATA)
  	   LD A, 0+0+56+3 ;64+48+2 attributes FLASH *128 + BRIGHT *64 + PAPER *8 + INK
@@ -19,8 +20,6 @@ DRAW_UPPER_HORIZONTAL_LINE:
 	   LD D,40 ; X (vertical)
 	   LD C,50 ; Y (horizontal)
 	   CALL Get_Pixel_Address
-	   ;PUSH HL
-	   ;LD HL, 16384
 	   LD B,20 ; line length *8pixel/ rectangle width
 	   LD A,%11111111; 8 pixel graphic line
 	   LD E,8
@@ -36,11 +35,10 @@ LOOP:
            LD A,C
 	   SUB E
 	   LD C,A
-           ;POP HL
 
 DRAW_RIGHT_VERTICAL_LINE:
 	   LD B,10
-	   LD A,%11111111
+	   LD A,%00000001
 LOOPV1:
 	   INC D
            CALL Get_Pixel_Address       
@@ -48,10 +46,6 @@ LOOPV1:
 	   DJNZ LOOPV1
 
 DRAW_LOWER_HORIZONTAL_LINE:
-	   ;LD D,50 ; X (vertical)
-	   ;LD C,50 ; Y (horizontal)
-	   ;CALL Get_Pixel_Address
-	   ;PUSH HL
 	   LD B,20 ; line length *8pixel/ rectangle width
 	   LD A,255
 	   LD E,8
@@ -63,22 +57,19 @@ LOOP2:
 	   LD C,A
 	   LD A,%11111111; restores function of A
 	   DJNZ LOOP2
-	   ;POP HL
-
+	   LD A,%00000011
+           LD(HL),A      
 DRAW_LEFT_VERTICAL_LINE:
 	   LD B,10
-	   LD A,%11111111
+	   LD A,%00000001
 LOOPV2:
 	   DEC D
            CALL Get_Pixel_Address       
 	   LD (HL),A
 	   DJNZ LOOPV2
 
-
-
-
+; returns to BASIC
 	   RET
-
 
 Get_Pixel_Address:	; Code kindly borrowed (and modified) from http://www.breakintoprogram.co.uk/hardware/computers/zx-spectrum/screen-memory-layout
 			LD A,D				; Calculate Y2,Y1,Y0
@@ -105,5 +96,5 @@ Get_Pixel_Address:	; Code kindly borrowed (and modified) from http://www.breakin
 			OR L				; OR with Y5,Y4,Y3
 			LD L,A				; Store in L
 			LD A,C
-			AND %0111
+			AND %0111			; found that this modification was necessary to the snippet from breakintoprogram
 			RET
