@@ -1,3 +1,4 @@
+; draws rectangle on screen using algorithm to calculate PIXELADDRESS (can be used with any classic ZX Spectrum, no PIXELAD/PIXELDN commands as in NEXT)
 org 30000 
 start:
 ;border color
