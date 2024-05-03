@@ -1,5 +1,4 @@
 org 30000 
-;address should be the same as the one loaded and called from BASIC. However, number of bytes should be exact
 start:
 ;border color
 	   ;LD a,0
