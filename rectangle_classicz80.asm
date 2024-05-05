@@ -1,4 +1,4 @@
-; draws rectangle on screen using algorithm to calculate PIXELADDRESS (can be used with any classic ZX Spectrum, no PIXELAD/PIXELDN commands as in Spectrum NEXT
+; draws rectangles on screen using algorithm to calculate PIXELADDRESS and PIXELDOWN (can be used with any classic ZX Spectrum, no calls to PIXELAD/PIXELDN commands as done with a Spectrum NEXT
 org 30000 
 start:
 ;border color
@@ -14,46 +14,48 @@ start:
 	   LD BC, 767 ; 767 number of bytes to copy to display memory (23x32 characters on screen)
 	   LDIR
 ; END OF ATTRIBUTE ROUTINE
-COORDS:
-	   LD D,100 ; X (vertical) 0-178
-	   LD C,100 ; Y (horizontal) 0-255
-    	   PUSH BC ; stores initial position      
-	   PUSH DE ; of left lower corner
 
-	   LD B,100 ; rectangle width
-LOWERHORIZONTAL:
+main:
+	   ; rectangle parameters and draw rectangle command
+	   LD C,100 ; Y (horizontal) 0-255
+	   LD D,120 ; X (vertical) 0-175
+	   LD E,20 ; rectangle height
+           LD B,100 ; rectangle width
+	   CALL RECTANGLE
+           RET
+
+RECTANGLE
+	   PUSH BC
+	   PUSH DE
+LOWERHORIZONTAL
 	   CALL Get_Pixel_Address
 	   LD(HL),%11111111
 	   INC C
 	   DJNZ LOWERHORIZONTAL
 	   DEC C
-
-	   LD B,35 ;rectangle height
-RIGHTVERTICAL:
+	   LD B,E ; sets rectangle height
+RIGHTVERTICAL
            CALL PIXELUP
 	   LD(HL),%00000001
-	   DJNZ RIGHTVERTICAL
-; cursor restored to left lower corner  
-	   POP DE
-	   POP BC
-	   CALL Get_Pixel_Address 
-
-	   LD B,35 ; rectangle height 
-LEFTVERTICAL:
+	   DJNZ RIGHTVERTICAL 
+           POP DE ; cursor restored to
+	   POP BC ; left lower corner      
+	   CALL Get_Pixel_Address
+	   PUSH BC; stores rectangle length again
+	   LD B,E
+LEFTVERTICAL
            CALL PIXELUP
 	   LD(HL),%10000000
            DEC D
 	   DJNZ LEFTVERTICAL
-	
-	   LD B,100 ; rectangle width
-UPPERHORIZONTAL:
+           POP BC; restores rectangle length again
+UPPERHORIZONTAL
 	   CALL Get_Pixel_Address
 	   LD(HL),%11111111
 	   INC C
-	   DJNZ UPPERHORIZONTAL
-	      
-; returns to BASIC
-	   RET
+	   DJNZ UPPERHORIZONTAL    
+	   
+           RET
 
 Get_Pixel_Address:	; routine borrowed from http://www.breakintoprogram.co.uk/hardware/computers/zx-spectrum/screen-memory-layout
 			LD A,D				; Calculate Y2,Y1,Y0
@@ -82,6 +84,7 @@ Get_Pixel_Address:	; routine borrowed from http://www.breakintoprogram.co.uk/har
 			;LD A,C
 			;AND %0111
 			RET
+
 PIXELUP:                ; routine borrowed from Alvin Albrecht's Display File Organization - http://www.geocities.com/aralbrec/spritepack/ )
 			LD A,H ; A=H=010BBSSS
 			DEC H ; DECREASESSS
